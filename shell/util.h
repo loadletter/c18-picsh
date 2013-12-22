@@ -25,5 +25,6 @@ void serial_print(char *msg);
 void serial_println(char *msg);
 void serial_print_P(const char *msg);
 void serial_println_P(const char *msg);
+#define PSTR(x) (x)
 
 #endif /* UTIL_H_ */

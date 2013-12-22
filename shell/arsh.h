@@ -50,7 +50,7 @@ typedef struct tokenstruct {
 } tokenstruct;
 
 
-void init_arsh(unsigned long speed);
+void init_arsh(void);
 void arsh(void);
 int try_completion(char *buf, int show_matches);
 void tokenize(char *buf);

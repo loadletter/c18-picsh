@@ -65,7 +65,7 @@ tokenstruct shelltokens[] = {
 };
 
 
-void init_arsh(unsigned long speed)
+void init_arsh(void)
 {
 
 	cmdbuf[0] = 0;
@@ -73,9 +73,6 @@ void init_arsh(unsigned long speed)
 	histbuf[0] = 0;
 	cur_histentry = -1;
 
-	if(speed == 0)
-		speed = 9600;
-	beginSerial(speed);
 	serial_println_P(PSTR(VERSION));
 	serial_print_P(PSTR(PROMPT));
 
