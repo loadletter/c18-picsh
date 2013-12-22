@@ -79,116 +79,110 @@ void init_arsh(void)
 }
 
 
-void arsh(void)
+void arsh(unsigned char c)
 {
 	uint8_t complete, l, i;
-	unsigned char c;
 	char *word, *suffix;
 	static unsigned char prev_char = 0;
 	static uint8_t escmode = 0;
 
-	if(serialAvailable() > 0)
+	if(c == '\r' || c == '\n')
 	{
-		c = serialRead();
-		if(c == '\r' || c == '\n')
-		{
-			serial_endline();
-			if(cmdbuf[0])
-				process_command();
-			cmdbuf[0] = 0;
-			serial_print_P(PSTR(PROMPT));
-			escmode = 0;
-			cur_histentry = -1;
-		}
-		else
-		{
-			l = strlen(cmdbuf);
-			if( (c == 0x08 || c == 0x7f) && l != 0)
-			{
-				// backspace or rubout
-				cmdbuf[l-1] = 0;
-				serialWrite(0x08);
-				serialWrite(0x20);
-				serialWrite(0x08);
-			}
-			else if(c == 0x09)
-			{
-				// tab: try to complete a keyword
-				// find start of current word
-				for(i = l-1; i != 0 && cmdbuf[i] != ' '; i--)
-					;
-				if(cmdbuf[i] == ' ')
-					i++;
-				word = cmdbuf + i;
-				complete = try_completion(word, 0);
-				if(complete && (complete & 0x80) == 0)
-				{
-					// found exactly one match for completion, find the token entry
-					for(i = 0; shelltokens[i].token != complete; i++)
-						;
-					for(suffix = shelltokens[i].keyword + strlen(word); *suffix; suffix++)
-					{
-						if(l < SERIAL_CMDBUF_LEN)
-							cmdbuf[l++] = *suffix;
-						serialWrite(*suffix);
-					}
-					if(l < SERIAL_CMDBUF_LEN-1)
-						cmdbuf[l++] = ' ';
-					cmdbuf[l] = 0;
-					serialWrite(' ');
-				}
-				else if(complete & 0x80 && prev_char == 0x09)
-				{
-					// hit tab twice, show a list of completions
-					serial_println("");
-					try_completion(word, 1);
-					serial_print_P(PSTR(PROMPT));
-					serial_print(cmdbuf);
-				}
-			}
-			else if(c == 0x0c)
-			{
-				// characters not saved, but displayed when typed (^l)
-				serialWrite(c);
-			}
-			else if(c == 0x1b)
-			{
-				// esc key, change to esc sequence capture mode
-				escmode = 1;
-			}
-			else if(escmode > 0)
-			{
-				if(escmode == 1 && c == '[')
-					escmode = 2;
-				else
-				{
-					if(escmode == 2 && c == 'A')
-						history_up();
-					else if(escmode == 2 && c == 'B')
-						history_down();
-
-					// regardless of how we got here, we're done with the
-					// escape sequence
-					escmode = 0;
-				}
-			}
-			else if(c == 0x10)
-				// ^p
-				history_up();
-			else if(c == 0x0e)
-				// ^n
-				history_down();
-			else if(l < SERIAL_CMDBUF_LEN-1 && c >= 0x20 && c < 0x7f)
-			{
-				// regular characters
-				cmdbuf[l] = c;
-				cmdbuf[l+1] = 0;
-				serialWrite(c);
-			}
-		}
-		prev_char = c;
+		serial_endline();
+		if(cmdbuf[0])
+			process_command();
+		cmdbuf[0] = 0;
+		serial_print_P(PSTR(PROMPT));
+		escmode = 0;
+		cur_histentry = -1;
 	}
+	else
+	{
+		l = strlen(cmdbuf);
+		if( (c == 0x08 || c == 0x7f) && l != 0)
+		{
+			// backspace or rubout
+			cmdbuf[l-1] = 0;
+			serialWrite(0x08);
+			serialWrite(0x20);
+			serialWrite(0x08);
+		}
+		else if(c == 0x09)
+		{
+			// tab: try to complete a keyword
+			// find start of current word
+			for(i = l-1; i != 0 && cmdbuf[i] != ' '; i--)
+				;
+			if(cmdbuf[i] == ' ')
+				i++;
+			word = cmdbuf + i;
+			complete = try_completion(word, 0);
+			if(complete && (complete & 0x80) == 0)
+			{
+				// found exactly one match for completion, find the token entry
+				for(i = 0; shelltokens[i].token != complete; i++)
+					;
+				for(suffix = shelltokens[i].keyword + strlen(word); *suffix; suffix++)
+				{
+					if(l < SERIAL_CMDBUF_LEN)
+						cmdbuf[l++] = *suffix;
+					serialWrite(*suffix);
+				}
+				if(l < SERIAL_CMDBUF_LEN-1)
+					cmdbuf[l++] = ' ';
+				cmdbuf[l] = 0;
+				serialWrite(' ');
+			}
+			else if(complete & 0x80 && prev_char == 0x09)
+			{
+				// hit tab twice, show a list of completions
+				serial_println("");
+				try_completion(word, 1);
+				serial_print_P(PSTR(PROMPT));
+				serial_print(cmdbuf);
+			}
+		}
+		else if(c == 0x0c)
+		{
+			// characters not saved, but displayed when typed (^l)
+			serialWrite(c);
+		}
+		else if(c == 0x1b)
+		{
+			// esc key, change to esc sequence capture mode
+			escmode = 1;
+		}
+		else if(escmode > 0)
+		{
+			if(escmode == 1 && c == '[')
+				escmode = 2;
+			else
+			{
+				if(escmode == 2 && c == 'A')
+					history_up();
+				else if(escmode == 2 && c == 'B')
+					history_down();
 
+				// regardless of how we got here, we're done with the
+				// escape sequence
+				escmode = 0;
+			}
+		}
+		else if(c == 0x10)
+			// ^p
+			history_up();
+		else if(c == 0x0e)
+			// ^n
+			history_down();
+		else if(l < SERIAL_CMDBUF_LEN-1 && c >= 0x20 && c < 0x7f)
+		{
+			// regular characters
+			cmdbuf[l] = c;
+			cmdbuf[l+1] = 0;
+			serialWrite(c);
+		}
+	}
+	prev_char = c;
 }
 
 

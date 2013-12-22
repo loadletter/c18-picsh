@@ -19,8 +19,7 @@
 
 #include "./USB/usb_function_cdc.h"
 
-/* TODO: use defines */
-
+/* TODO: FIND A WAY TO USE USB_In_Buffer instead of directly using puts*/
 void serial_endline(void)
 {
 	putrsUSBUSART("\r\n");

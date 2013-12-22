@@ -750,6 +750,9 @@ void ProcessIO(void)
 	        
 			for(i=0;i<numBytesRead;i++)
 			{
+				//FIND A WAY TO USE USB_In_Buffer
+				//arsh(USB_Out_Buffer[i]);
+				
 				switch(USB_Out_Buffer[i])
 				{
 					case 0x0A:
