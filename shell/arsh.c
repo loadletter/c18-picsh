@@ -28,7 +28,7 @@
 #include "util.h"
 
 
-const char HELP_TEXT[] PROGMEM = "Commands:\r\n\
+const rom char HELP_TEXT[] = "Commands:\r\n\
 ping				return 'pong'\r\n\
 read dpin <pin>			return digital state of pin\r\n\
 read apin <pin>			return analog state of pin\r\n\
@@ -37,7 +37,7 @@ set mode <pin> <mode>		set pin to mode ('IN' or 'OUT')\r\n\
 monitor [dpin|apin <pin> ...]	live pin monitor\r\n";
 //serial <rx> <tx>		establish serial connection on given pins\r\n";
 
-const char MONITOR_TEXT[] PROGMEM = "\x1b[2J\x1b[1;1H" "Arsh pin monitor (esc to quit)\r\n\r\n";
+const rom char MONITOR_TEXT[] = "\x1b[2J\x1b[1;1H" "Arsh pin monitor (esc to quit)\r\n\r\n";
 
 
 // globals
