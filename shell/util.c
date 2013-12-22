@@ -17,56 +17,39 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "WProgram.h"
-#include <avr/pgmspace.h>
+#include "./USB/usb_function_cdc.h"
 
+/* TODO: use defines */
 
 void serial_endline(void)
 {
-
-	serialWrite('\r');
-	serialWrite('\n');
-
+	putrsUSBUSART("\r\n");
 }
 
 
 void serial_print(char *msg)
 {
-	int i;
-
-	for(i = 0; msg[i]; i++)
-	{
-		serialWrite(msg[i]);
-	}
-
+	putsUSBUSART(msg);
 }
 
 
 void serial_println(char *msg)
 {
-
 	serial_print(msg);
 	serial_endline();
-
 }
 
 
 void serial_print_P(const char *msg)
 {
-	char c;
-
-	while( (c = pgm_read_byte(msg++)) )
-		serialWrite(c);
-
+	putrsUSBUSART(msg);
 }
 
 
 void serial_println_P(const char *msg)
 {
-
 	serial_print_P(msg);
 	serial_endline();
-
 }
 
 
