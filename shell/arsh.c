@@ -112,8 +112,8 @@ void init_arsh(char *buf)
 	histbuf[0] = 0;
 	cur_histentry = -1;
 
-	serial_println_P(PSTR(VERSION));
-	serial_print_P(PSTR(PROMPT));
+	USB_println_ROM(VERSION);
+	USB_print_ROM(PROMPT);
 
 }
 
@@ -127,11 +127,11 @@ void arsh(unsigned char c)
 
 	if(c == '\r' || c == '\n')
 	{
-		serial_endline();
+		USB_endline();
 		if(cmdbuf[0])
 			process_command();
 		cmdbuf[0] = 0;
-		serial_print_P(PSTR(PROMPT));
+		USB_print_ROM(PROMPT);
 		escmode = 0;
 		cur_histentry = -1;
 	}
@@ -142,9 +142,9 @@ void arsh(unsigned char c)
 		{
 			// backspace or rubout
 			cmdbuf[l-1] = 0;
-			serialWrite(0x08);
-			serialWrite(0x20);
-			serialWrite(0x08);
+			USB_putchar(0x08);
+			USB_putchar(0x20);
+			USB_putchar(0x08);
 		}
 		else if(c == 0x09)
 		{
@@ -165,26 +165,26 @@ void arsh(unsigned char c)
 				{
 					if(l < SERIAL_CMDBUF_LEN)
 						cmdbuf[l++] = *suffix;
-					serialWrite(*suffix);
+					USB_putchar(*suffix);
 				}
 				if(l < SERIAL_CMDBUF_LEN-1)
 					cmdbuf[l++] = ' ';
 				cmdbuf[l] = 0;
-				serialWrite(' ');
+				USB_putchar(' ');
 			}
 			else if(complete & 0x80 && prev_char == 0x09)
 			{
 				// hit tab twice, show a list of completions
-				serial_println("");
+				USB_println("");
 				try_completion(word, 1);
-				serial_print_P(PSTR(PROMPT));
-				serial_print(cmdbuf);
+				USB_print_ROM(PROMPT);
+				USB_print(cmdbuf);
 			}
 		}
 		else if(c == 0x0c)
 		{
 			// characters not saved, but displayed when typed (^l)
-			serialWrite(c);
+			USB_putchar(c);
 		}
 		else if(c == 0x1b)
 		{
@@ -218,7 +218,7 @@ void arsh(unsigned char c)
 			// regular characters
 			cmdbuf[l] = c;
 			cmdbuf[l+1] = 0;
-			serialWrite(c);
+			USB_putchar(c);
 		}
 	}
 	prev_char = c;
@@ -235,7 +235,7 @@ int try_completion(char *buf, int show_matches)
 		if(!strncasecmp(shelltokens[i].keyword, buf, len))
 		{
 			if(show_matches)
-				serial_println(shelltokens[i].keyword);
+				USB_println(shelltokens[i].keyword);
 			token = shelltokens[i].token;
 			ret++;
 		}
@@ -284,14 +284,14 @@ void tokenize(char *buf)
 			val = atoi(buf);
 			if(val > 127)
 			{
-				serial_println_P(PSTR("can't parse number"));
+				USB_println_ROM("can't parse number");
 			}
 			tokens[num_tokens++] = val | 0x80;
 		}
 		else
 		{
-			serial_print_P(PSTR("don't know "));
-			serial_println(buf);
+			USB_print_ROM("don't know ");
+			USB_println(buf);
 		}
 	}
 
@@ -422,8 +422,9 @@ void load_histentry(uint8_t pos)
  			strlcat(cmdbuf, " ", SERIAL_CMDBUF_LEN);
  		}
 	}
-	serial_print_P(PSTR("\r\x1b[0K" PROMPT));
-	serial_print(cmdbuf);
+	USB_print_ROM("\r\x1b[0K");
+	USB_print_ROM(PROMPT);
+	USB_print(cmdbuf);
 
 }
 
@@ -458,7 +459,8 @@ void history_down(void)
 	if(--cur_histentry == -1)
 	{
 		// stepped down out of history again, show a blank line
-		serial_print_P(PSTR("\r\x1b[0K" PROMPT));
+		USB_print_ROM("\r\x1b[0K");
+		USB_print_ROM(PROMPT);
 		cmdbuf[0] = 0;
 		num_tokens = 0;
 	}
@@ -479,19 +481,19 @@ void process_command()
 	parse_cmdline();
 	add_to_history();
 	if(tokens[0] == TOK_HELP)
-		serial_print_P(HELP_TEXT);
+		USB_print_ROM(HELP_TEXT);
 	else if(tokens[0] == TOK_PING)
-		serial_println_P(PSTR("pong"));
+		USB_println_ROM("pong");
 	else if(tokens[0] == TOK_RESET)
 	{
-		serial_println_P(PSTR("Not implemented."));
+		USB_println_ROM("Not implemented.");
 	}
 	else if(tokens[0] == TOK_READ)
 	{
 		if(num_tokens == 3)
 		{
 			if(tokens[2] < 0x80)
-				serial_print_P(HELP_TEXT);
+				USB_print_ROM(HELP_TEXT);
 			else
 			{
 				pin = tokens[2] & 0x7f;
@@ -502,7 +504,7 @@ void process_command()
 			}
 		}
 		else
-			serial_print_P(HELP_TEXT);
+			USB_print_ROM(HELP_TEXT);
 	}
 	else if(tokens[0] == TOK_SET)
 	{
@@ -511,38 +513,38 @@ void process_command()
 			if(tokens[1] == TOK_DPIN)
 			{
 				if(tokens[2] < 0x80)
-					serial_print_P(HELP_TEXT);
+					USB_print_ROM(HELP_TEXT);
 				else
 				{
 					pin = tokens[2] & 0x7f;
 					if(tokens[3] == TOK_HIGH)
-						digitalWrite(pin, HIGH);
+						digitalWrite(pin, HIGH); //TODO
 					else if(tokens[3] == TOK_LOW)
-						digitalWrite(pin, LOW);
+						digitalWrite(pin, LOW); //TODO
 					else
-						serial_print_P(HELP_TEXT);
+						USB_print_ROM(HELP_TEXT);
 				}
 			}
 			else if(tokens[1] == TOK_MODE)
 			{
 				if(tokens[2] < 0x80)
-					serial_print_P(HELP_TEXT);
+					USB_print_ROM(HELP_TEXT);
 				else
 				{
 					pin = tokens[2] & 0x7f;
-					if(tokens[3] == TOK_IN)
+					if(tokens[3] == TOK_IN) //TODO
 						pinMode(pin, INPUT);
 					else if(tokens[3] == TOK_OUT)
-						pinMode(pin, OUTPUT);
+						pinMode(pin, OUTPUT); //TODO
 					else
-						serial_print_P(HELP_TEXT);
+						USB_print_ROM(HELP_TEXT);
 				}
 			}
 			else
-				serial_print_P(HELP_TEXT);
+				USB_print_ROM(HELP_TEXT);
 		}
 		else
-			serial_print_P(HELP_TEXT);
+			USB_print_ROM(HELP_TEXT);
 	}
 	else if(tokens[0] == TOK_MONITOR)
 	{
@@ -558,7 +560,7 @@ void process_command()
 				else if(tokens[t] == TOK_APIN)
 					mode = 2;
 				else
-					serial_print_P(HELP_TEXT);
+					USB_print_ROM(HELP_TEXT);
 			}
 			else
 			{
@@ -596,7 +598,7 @@ void process_command()
 //			serial_print_P(HELP_TEXT);
 //	}
 	else
-		serial_println_P(PSTR("unknown command"));
+		USB_println_ROM("unknown command");
 
 }
 
@@ -671,15 +673,15 @@ void monitor(int dpins, int apins)
 	char buf[16];
 
 	// set up the display, values will be filled in later
-	serial_print_P(MONITOR_TEXT);
+	USB_print_ROM(MONITOR_TEXT);
 	drow = arow = 0;
 	for(i = 0; i <= 13; i++)
 	{
 		if(dpins & (1 << i))
 		{
-			serial_print_P(PSTR("Digital pin "));
+			USB_print_ROM("Digital pin ");
 			snprintf(buf, 16, "%2d:", i);
-			serial_println(buf);
+			USB_println(buf);
 			drow++;
 		}
 	}
@@ -692,9 +694,9 @@ void monitor(int dpins, int apins)
 		if(apins & (1 << i))
 		{
 			snprintf(buf, 16, "\x1b[%d;%dH", arow + 3, acol);
-			serial_print(buf);
+			USB_print(buf);
 			snprintf(buf, 16, "Analog pin %d:", i);
-			serial_print(buf);
+			USB_print(buf);
 			arow++;
 		}
 	}
@@ -710,19 +712,19 @@ void monitor(int dpins, int apins)
 		{
 			if(dpins & (1 << i))
 			{
-				val = digitalRead(i);
+				val = digitalRead(i); //TODO
 				if(!init_done || val != (prevd & (1 << i)) >> i)
 				{
 					snprintf(buf, 16, "\x1b[%d;17H", row);
-					serial_print(buf);
+					USB_print(buf);
 					if(val == LOW)
 					{
-						serial_println_P(PSTR("LOW "));
+						USB_println_ROM("LOW ");
 						prevd &= !(1 << i);
 					}
 					else
 					{
-						serial_println_P(PSTR("HIGH"));
+						USB_println_ROM("HIGH");
 						prevd |= 1 << i;
 					}
 				}
@@ -736,11 +738,11 @@ void monitor(int dpins, int apins)
 		{
 			if(apins & (1 << i))
 			{
-				val = analogRead(i);
+				val = analogRead(i); //TODO
 				if(!init_done || val != preva[i])
 				{
 					snprintf(buf, 16, "\x1b[%d;%dH%4d", row, acol + 14, val);
-					serial_print(buf);
+					USB_print(buf);
 					preva[i] = val;
 				}
 				row++;
@@ -748,9 +750,9 @@ void monitor(int dpins, int apins)
 		}
 
 		snprintf(buf, 16, "\x1b[%d;1H", drow + 3);
-		serial_print(buf);
+		USB_print(buf);
 		stamp = millis();
-		while(millis() < stamp + MONITOR_FREQUENCY)
+		while(millis() < stamp + MONITOR_FREQUENCY) //TODO: this needs to be modiefied to not block (set a flag the first time and execute it until the char == 0x1b)
 		{
 			delay(10);
 			if(serialAvailable() > 0)
@@ -763,7 +765,7 @@ void monitor(int dpins, int apins)
 
 	// move down past the display area before returning to the prompt
 	snprintf(buf, 16, "\x1b[%d;1H", drow + 4);
-	serial_print(buf);
+	USB_print(buf);
 
 }
 
@@ -785,12 +787,12 @@ void show_digital_pin_status(int pin)
 {
 	char buf[32], *state;
 
-	if(digitalRead(pin) == LOW)
+	if(digitalRead(pin) == LOW) //TODO
 		state = "LOW";
 	else
 		state = "HIGH";
 	snprintf(buf, 32, "dpin %d = %s", pin, state);
-	serial_println(buf);
+	USB_println(buf);
 
 }
 
@@ -799,12 +801,12 @@ void set_digital_pin(int pin)
 {
 	char buf[32], *state;
 
-	if(digitalRead(pin) == LOW)
+	if(digitalRead(pin) == LOW) //TODO
 		state = "LOW";
 	else
 		state = "HIGH";
 	snprintf(buf, 32, "dpin %d = %s", pin, state);
-	serial_println(buf);
+	USB_println(buf);
 
 }
 
@@ -814,9 +816,9 @@ void show_analog_pin_status(int pin)
 	char buf[32];
 	int val;
 
-	val = analogRead(pin);
+	val = analogRead(pin); //TODO
 	snprintf(buf, 32, "apin %d = %d", pin, val);
-	serial_println(buf);
+	USB_println(buf);
 
 }
 
