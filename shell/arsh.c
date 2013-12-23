@@ -670,7 +670,7 @@ void monitor(int dpins, int apins)
 {
 	unsigned long stamp;
 	int val, done, init_done, acol, prevd, preva[6], row, drow, arow, i;
-	char buf[16];
+	char buf[6];
 
 	// set up the display, values will be filled in later
 	USB_print_ROM(MONITOR_TEXT);
@@ -679,9 +679,12 @@ void monitor(int dpins, int apins)
 	{
 		if(dpins & (1 << i))
 		{
-			USB_print_ROM("Digital pin ");
-			snprintf(buf, 16, "%2d:", i);
+			USB_print_ROM("Digital pin "); //"%2d:", i
+			if(i < 10)
+				USB_putchar(' ');
+			itoa(i, buf);
 			USB_println(buf);
+			USB_putchar(':'); 
 			drow++;
 		}
 	}
@@ -693,10 +696,19 @@ void monitor(int dpins, int apins)
 	{
 		if(apins & (1 << i))
 		{
-			snprintf(buf, 16, "\x1b[%d;%dH", arow + 3, acol);
+			USB_print_ROM("\x1b["); //"\x1b[%d;%dH", arow + 3, acol
+			itoa(arow + 3, buf);
 			USB_print(buf);
-			snprintf(buf, 16, "Analog pin %d:", i);
+			USB_putchar(';');
+			itoa(acol, buf);
 			USB_print(buf);
+			USB_putchar('H');
+			
+			USB_print_ROM("Analog pin "); //"Analog pin %d:", i
+			itoa(i, buf);
+			USB_print(buf);
+			USB_putchar(':');
+			
 			arow++;
 		}
 	}
@@ -715,8 +727,11 @@ void monitor(int dpins, int apins)
 				val = digitalRead(i); //TODO
 				if(!init_done || val != (prevd & (1 << i)) >> i)
 				{
-					snprintf(buf, 16, "\x1b[%d;17H", row);
+					USB_print_ROM("\x1b["); //"\x1b[%d;17H", row
+					itoa(row, buf);
 					USB_print(buf);
+					USB_print_ROM(";17H");
+					
 					if(val == LOW)
 					{
 						USB_println_ROM("LOW ");
@@ -742,6 +757,19 @@ void monitor(int dpins, int apins)
 				if(!init_done || val != preva[i])
 				{
 					snprintf(buf, 16, "\x1b[%d;%dH%4d", row, acol + 14, val);
+					USB_print_ROM("\x1b["); //
+					itoa(row, buf);
+					USB_print(buf);
+					USB_putchar(';');
+					itoa(acol + 14, buf);
+					USB_print(buf);
+					USB_putchar('H');
+					itoa(val, buf);
+						/*switch(strlen(buf))
+						{
+							case 1: TODO: add spaces
+						}*/
+
 					USB_print(buf);
 					preva[i] = val;
 				}
