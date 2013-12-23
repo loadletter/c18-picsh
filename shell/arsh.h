@@ -20,38 +20,10 @@
 #ifndef ARSH_H_
 #define ARSH_H_
 
-#include <avr/pgmspace.h>
 
-#define SERIAL_CMDBUF_LEN	64
-#define MAX_NUM_TOKENS		10
-#define MONITOR_FREQUENCY	200  // monitor refresh frequency in ms
-#define HISTORY_LEN		16
-
-#define VERSION			"Arsh v0.1"
-#define PROMPT				"] "
-#define TOK_HELP			1
-#define TOK_PING			2
-#define TOK_RESET			3
-#define TOK_READ			4
-#define TOK_SET			5
-#define TOK_DPIN			6
-#define TOK_APIN			7
-#define TOK_MODE			8
-#define TOK_HIGH			9
-#define TOK_LOW			10
-#define TOK_IN				11
-#define TOK_OUT			12
-#define TOK_MONITOR		13
-#define TOK_SERIAL			14
-
-typedef struct tokenstruct {
-	uint8_t token;
-	char *keyword;
-} tokenstruct;
-
-
-void init_arsh(unsigned char c);
-void arsh(void);
+void init_arsh(void);
+void arsh(unsigned char c);
+/*
 int try_completion(char *buf, int show_matches);
 void tokenize(char *buf);
 void parse_cmdline(void);
@@ -68,5 +40,6 @@ void monitor(int dpins, int apins);
 void read_all_pins(void);
 void show_digital_pin_status(int pin);
 void show_analog_pin_status(int pin);
+*/
 
 #endif /* ARSH_H_ */

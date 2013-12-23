@@ -20,12 +20,34 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "WProgram.h"
-
-#include <avr/pgmspace.h>
-
-#include "arsh.h"
 #include "util.h"
+
+#define SERIAL_CMDBUF_LEN	64
+#define MAX_NUM_TOKENS		10
+#define MONITOR_FREQUENCY	200  // monitor refresh frequency in ms
+#define HISTORY_LEN		16
+
+#define VERSION			"Arsh v0.1"
+#define PROMPT				"] "
+#define TOK_HELP			1
+#define TOK_PING			2
+#define TOK_RESET			3
+#define TOK_READ			4
+#define TOK_SET			5
+#define TOK_DPIN			6
+#define TOK_APIN			7
+#define TOK_MODE			8
+#define TOK_HIGH			9
+#define TOK_LOW			10
+#define TOK_IN				11
+#define TOK_OUT			12
+#define TOK_MONITOR		13
+#define TOK_SERIAL			14
+
+typedef struct tokenstruct {
+	uint8_t token;
+	char *keyword;
+} tokenstruct;
 
 
 const rom char HELP_TEXT[] = "Commands:\r\n\
@@ -38,7 +60,6 @@ monitor [dpin|apin <pin> ...]	live pin monitor\r\n";
 //serial <rx> <tx>		establish serial connection on given pins\r\n";
 
 const rom char MONITOR_TEXT[] = "\x1b[2J\x1b[1;1H" "Arsh pin monitor (esc to quit)\r\n\r\n";
-
 
 // globals
 char cmdbuf[SERIAL_CMDBUF_LEN];
