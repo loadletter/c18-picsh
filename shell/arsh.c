@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "./USB/usb_function_cdc.h"
 #include "util.h"
 
 #define SERIAL_CMDBUF_LEN	64
@@ -85,10 +86,20 @@ tokenstruct shelltokens[] = {
 	{ 0, NULL }
 };
 
+/* USB communication functions */
+char *usbbuf = NULL;
 
-void init_arsh(void)
+#define USB_endline strcatpgm2ram(usbbuf, "\r\n")
+#define USB_print(x) strcat(usbbuf, (x))
+#define USB_println(x) USB_print(x); USB_endline()
+#define USB_print_ROM(x) strcatpgm2ram(usbbuf, (x))
+#define USB_println_ROM(x) USB_print_ROM(x); USB_endline()
+
+/* main */
+
+void init_arsh(char *buf)
 {
-
+	usbbuf = buf;
 	cmdbuf[0] = 0;
 	num_tokens = 0;
 	histbuf[0] = 0;

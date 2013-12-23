@@ -21,7 +21,7 @@
 #define ARSH_H_
 
 
-void init_arsh(void);
+void init_arsh(char *buf);
 void arsh(unsigned char c);
 /*
 int try_completion(char *buf, int show_matches);

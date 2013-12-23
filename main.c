@@ -51,6 +51,7 @@
 /** INCLUDES *******************************************************/
 #include "./USB/usb.h"
 #include "./USB/usb_function_cdc.h"
+#include "shell/arsh.h"
 
 #include "HardwareProfile.h"
 
@@ -659,11 +660,12 @@ static void InitializeSystem(void)
     #if defined(USE_SELF_POWER_SENSE_IO)
     tris_self_power = INPUT_PIN;	// See HardwareProfile.h
     #endif
-    
-    UserInit();
 
     USBDeviceInit();	//usb_device.c.  Initializes USB module SFRs and firmware
     					//variables to known states.
+
+    UserInit();
+    
 }//end InitializeSystem
 
 
@@ -697,6 +699,9 @@ void UserInit(void)
 
     //Initialize the pushbuttons
     mInitAllSwitches();
+    
+    //Intialize the shell
+    arsh_init(USB_In_Buffer);
 }//end UserInit
 
 /********************************************************************
@@ -743,30 +748,18 @@ void ProcessIO(void)
 
     if(USBUSARTIsTxTrfReady())
     {
-		numBytesRead = getsUSBUSART(USB_Out_Buffer,64);
+		numBytesRead = getsUSBUSART(USB_Out_Buffer, sizeof(USB_Out_Buffer));
 		if(numBytesRead != 0)
 		{
 			BYTE i;
 	        
-			for(i=0;i<numBytesRead;i++)
+			for(i=0; i<numBytesRead; i++)
 			{
-				//FIND A WAY TO USE USB_In_Buffer
-				//arsh(USB_Out_Buffer[i]);
+				arsh(USB_Out_Buffer[i]);
 				
-				switch(USB_Out_Buffer[i])
-				{
-					case 0x0A:
-					case 0x0D:
-						USB_In_Buffer[i] = USB_Out_Buffer[i];
-						break;
-					default:
-						USB_In_Buffer[i] = USB_Out_Buffer[i] + 1;
-						break;
-				}
-
 			}
 
-			putUSBUSART(USB_In_Buffer,numBytesRead);
+			putsUSBUSART(USB_In_Buffer);
 		}
 	}
 
