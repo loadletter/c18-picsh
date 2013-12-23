@@ -95,6 +95,13 @@ char *usbbuf = NULL;
 #define USB_print_ROM(x) strcatpgm2ram(usbbuf, (x))
 #define USB_println_ROM(x) USB_print_ROM(x); USB_endline()
 
+void USB_putchar(char c)
+{
+	uint8_t buflen = strlen(usbbuf);
+	usbbuf[buflen + 1] = 0;
+	usbbuf[buflen] = c;
+}
+
 /* main */
 
 void init_arsh(char *buf)
