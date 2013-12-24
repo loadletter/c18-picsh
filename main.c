@@ -703,7 +703,7 @@ void UserInit(void)
     mInitAllSwitches();
     
     //Intialize the shell
-    arsh_init(USB_In_Buffer);
+    init_arsh(USB_In_Buffer);
 }//end UserInit
 
 /********************************************************************

@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include "arsh.h"
 
 #include "./USB/usb_function_cdc.h"
 
@@ -50,7 +51,7 @@ typedef signed char int8_t;
 
 typedef struct tokenstruct {
 	uint8_t token;
-	char *keyword;
+	const rom char *keyword;
 } tokenstruct;
 
 
@@ -134,6 +135,15 @@ int strncasecmp(char *s1, char *s2, int n)
 #define LOW 0
 #define INPUT 1
 #define OUTPUT 0
+
+/* prototypes */
+uint8_t remove_oldest_history_entry(void);
+void history_up(void);
+void history_down(void);
+void process_command(void);
+void monitor(int dpins, int apins);
+void show_digital_pin_status(int pin);
+void show_analog_pin_status(int pin);
 
 /* main */
 
@@ -364,7 +374,7 @@ void add_to_history(void)
 	uint8_t buflen, i;
 
 	// check if the last stored entry is actually the same as the new one
-	if(num_tokens == histbuf[0] && !memcmp(histbuf+1, tokens, num_tokens))
+	if(num_tokens == histbuf[0] && !memcmp(histbuf + 1, tokens, num_tokens))
 		// same, skip it
 		return;
 
@@ -507,7 +517,7 @@ void history_down(void)
 }
 
 
-void process_command()
+void process_command(void)
 {
 	unsigned int mond, mona;
 	uint8_t pin, mode, t;
