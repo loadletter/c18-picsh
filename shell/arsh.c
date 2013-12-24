@@ -18,7 +18,7 @@
  */
 
 #include <stdlib.h>
-#include <stdio.h>
+#include <ctypes.h>
 
 #include "./USB/usb_function_cdc.h"
 #include "util.h"
@@ -111,6 +111,13 @@ int strncasecmp(char *s1, char *s2, int n)
 }
 
 #define strcasecmp(A, B) strncasecmp((A), (B), strlen((A)))
+
+/* temporary defines */
+#define pinMode(a, b) NOP
+#define digitalRead(x) 0
+#define digitalWrite(a, b) NOP
+#define analogRead(x) 2
+
 
 /* main */
 
@@ -684,7 +691,7 @@ void monitor(int dpins, int apins)
 	char buf[6];
 
 	// set up the display, values will be filled in later
-	USB_print_ROM(MONITOR_TEXT);
+	USB_print_ROM(MONITOR_TEXT);/*
 	drow = arow = 0;
 	for(i = 0; i <= 13; i++)
 	{
@@ -809,7 +816,7 @@ void monitor(int dpins, int apins)
 	USB_print_ROM("\x1b["); //"\x1b[%d;1H", drow + 4
 	itoa(drow + 4, buf);
 	USB_print(buf);
-	USB_print_ROM(";1H");
+	USB_print_ROM(";1H");*/
 }
 
 
