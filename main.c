@@ -263,7 +263,7 @@
     #pragma udata
 #endif
 
-char USB_In_Buffer[64];
+char USB_In_Buffer[255];
 char USB_Out_Buffer[64];
 
 BOOL stringPrinted;
@@ -760,6 +760,7 @@ void ProcessIO(void)
 			}
 
 			putsUSBUSART(USB_In_Buffer);
+			USB_In_Buffer[0] = 0;
 		}
 	}
 
