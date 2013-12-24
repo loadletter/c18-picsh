@@ -756,8 +756,9 @@ void monitor(int dpins, int apins)
 				val = analogRead(i); //TODO
 				if(!init_done || val != preva[i])
 				{
-					snprintf(buf, 16, "\x1b[%d;%dH%4d", row, acol + 14, val);
-					USB_print_ROM("\x1b["); //
+					unsigned char numlen;
+					
+					USB_print_ROM("\x1b["); //"\x1b[%d;%dH%4d", row, acol + 14, val
 					itoa(row, buf);
 					USB_print(buf);
 					USB_putchar(';');
@@ -765,12 +766,10 @@ void monitor(int dpins, int apins)
 					USB_print(buf);
 					USB_putchar('H');
 					itoa(val, buf);
-						/*switch(strlen(buf))
-						{
-							case 1: TODO: add spaces
-						}*/
-
+					for(numlen = strlen(buf); numlen < 4; numlen++)
+						USB_putchar(' ');
 					USB_print(buf);
+					
 					preva[i] = val;
 				}
 				row++;
