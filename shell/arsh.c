@@ -18,10 +18,10 @@
  */
 
 #include <stdlib.h>
-#include <ctypes.h>
+#include <ctype.h>
+#include <string.h>
 
 #include "./USB/usb_function_cdc.h"
-#include "util.h"
 
 #define SERIAL_CMDBUF_LEN	64
 #define MAX_NUM_TOKENS		10
@@ -44,6 +44,9 @@
 #define TOK_OUT			12
 #define TOK_MONITOR		13
 #define TOK_SERIAL			14
+
+typedef unsigned char uint8_t;
+typedef signed char int8_t;
 
 typedef struct tokenstruct {
 	uint8_t token;
@@ -89,11 +92,21 @@ tokenstruct shelltokens[] = {
 /* USB communication functions */
 char *usbbuf = NULL;
 
-#define USB_endline strcatpgm2ram(usbbuf, "\r\n")
+#define USB_endline() strcatpgm2ram(usbbuf, "\r\n")
 #define USB_print(x) strcat(usbbuf, (x))
-#define USB_println(x) USB_print(x); USB_endline()
 #define USB_print_ROM(x) strcatpgm2ram(usbbuf, (x))
-#define USB_println_ROM(x) USB_print_ROM(x); USB_endline()
+
+void USB_println(char *c)
+{
+	USB_print(c);
+	USB_endline();
+}
+
+void USB_println_ROM(const char *c)
+{
+	USB_print_ROM(c);
+	USB_endline();
+}
 
 void USB_putchar(char c)
 {
@@ -113,11 +126,14 @@ int strncasecmp(char *s1, char *s2, int n)
 #define strcasecmp(A, B) strncasecmp((A), (B), strlen((A)))
 
 /* temporary defines */
-#define pinMode(a, b) NOP
+#define pinMode(a, b) ((a) + (b))
 #define digitalRead(x) 0
-#define digitalWrite(a, b) NOP
+#define digitalWrite(a, b) ((a) + (b))
 #define analogRead(x) 2
-
+#define HIGH 1
+#define LOW 0
+#define INPUT 1
+#define OUTPUT 0
 
 /* main */
 

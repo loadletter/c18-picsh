@@ -258,6 +258,8 @@
 
 #include "HardwareProfile.h"
 
+#include "shell/arsh.h"
+
 /** V A R I A B L E S ********************************************************/
 #if defined(__18CXX)
     #pragma udata
