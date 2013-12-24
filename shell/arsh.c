@@ -102,6 +102,16 @@ void USB_putchar(char c)
 	usbbuf[buflen] = c;
 }
 
+int strncasecmp(char *s1, char *s2, int n)
+{
+    while (--n >= 0 && toupper(*s1) == toupper(*s2++))
+	if (toupper(*s1++) == '\0')
+	    return(0);
+    return(n < 0 ? 0 : toupper(*s1) - toupper(*--s2));
+}
+
+#define strcasecmp(A, B) strncasecmp((A), (B), strlen((A)))
+
 /* main */
 
 void init_arsh(char *buf)
@@ -413,13 +423,14 @@ void load_histentry(uint8_t pos)
  		if(histbuf[i] & 0x80)
  		{
  			// it's a number
- 			snprintf(buf, 8, "%d ", histbuf[i] & 0x7f);
- 			strlcat(cmdbuf, buf, SERIAL_CMDBUF_LEN);
+ 			btoa(histbuf[i] & 0x7f, buf);
+ 			strcatpgm2ram(cmdbuf, " ");
+ 			strncat(cmdbuf, buf, SERIAL_CMDBUF_LEN - strlen(cmdbuf) - 1);
  		}
  		else
  		{
- 			strlcat(cmdbuf, shelltokens[histbuf[i] - 1].keyword, SERIAL_CMDBUF_LEN);
- 			strlcat(cmdbuf, " ", SERIAL_CMDBUF_LEN);
+ 			strncat(cmdbuf, shelltokens[histbuf[i] - 1].keyword, SERIAL_CMDBUF_LEN - strlen(cmdbuf) - 1);
+ 			strncatpgm2ram(cmdbuf, " ", SERIAL_CMDBUF_LEN - strlen(cmdbuf) - 1);
  		}
 	}
 	USB_print_ROM("\r\x1b[0K");
@@ -670,7 +681,7 @@ void monitor(int dpins, int apins)
 {
 	unsigned long stamp;
 	int val, done, init_done, acol, prevd, preva[6], row, drow, arow, i;
-	char buf[16];
+	char buf[6];
 
 	// set up the display, values will be filled in later
 	USB_print_ROM(MONITOR_TEXT);
@@ -679,9 +690,12 @@ void monitor(int dpins, int apins)
 	{
 		if(dpins & (1 << i))
 		{
-			USB_print_ROM("Digital pin ");
-			snprintf(buf, 16, "%2d:", i);
+			USB_print_ROM("Digital pin "); //"%2d:", i
+			if(i < 10)
+				USB_putchar(' ');
+			itoa(i, buf);
 			USB_println(buf);
+			USB_putchar(':'); 
 			drow++;
 		}
 	}
@@ -693,10 +707,19 @@ void monitor(int dpins, int apins)
 	{
 		if(apins & (1 << i))
 		{
-			snprintf(buf, 16, "\x1b[%d;%dH", arow + 3, acol);
+			USB_print_ROM("\x1b["); //"\x1b[%d;%dH", arow + 3, acol
+			itoa(arow + 3, buf);
 			USB_print(buf);
-			snprintf(buf, 16, "Analog pin %d:", i);
+			USB_putchar(';');
+			itoa(acol, buf);
 			USB_print(buf);
+			USB_putchar('H');
+			
+			USB_print_ROM("Analog pin "); //"Analog pin %d:", i
+			itoa(i, buf);
+			USB_print(buf);
+			USB_putchar(':');
+			
 			arow++;
 		}
 	}
@@ -715,8 +738,11 @@ void monitor(int dpins, int apins)
 				val = digitalRead(i); //TODO
 				if(!init_done || val != (prevd & (1 << i)) >> i)
 				{
-					snprintf(buf, 16, "\x1b[%d;17H", row);
+					USB_print_ROM("\x1b["); //"\x1b[%d;17H", row
+					itoa(row, buf);
 					USB_print(buf);
+					USB_print_ROM(";17H");
+					
 					if(val == LOW)
 					{
 						USB_println_ROM("LOW ");
@@ -741,16 +767,31 @@ void monitor(int dpins, int apins)
 				val = analogRead(i); //TODO
 				if(!init_done || val != preva[i])
 				{
-					snprintf(buf, 16, "\x1b[%d;%dH%4d", row, acol + 14, val);
+					unsigned char numlen;
+					
+					USB_print_ROM("\x1b["); //"\x1b[%d;%dH%4d", row, acol + 14, val
+					itoa(row, buf);
 					USB_print(buf);
+					USB_putchar(';');
+					itoa(acol + 14, buf);
+					USB_print(buf);
+					USB_putchar('H');
+					itoa(val, buf);
+					for(numlen = strlen(buf); numlen < 4; numlen++)
+						USB_putchar(' ');
+					USB_print(buf);
+					
 					preva[i] = val;
 				}
 				row++;
 			}
 		}
 
-		snprintf(buf, 16, "\x1b[%d;1H", drow + 3);
+		USB_print_ROM("\x1b["); //"\x1b[%d;1H", drow + 3
+		itoa(drow + 3, buf);
 		USB_print(buf);
+		USB_print_ROM(";1H");
+		
 		stamp = millis();
 		while(millis() < stamp + MONITOR_FREQUENCY) //TODO: this needs to be modiefied to not block (set a flag the first time and execute it until the char == 0x1b)
 		{
@@ -764,9 +805,11 @@ void monitor(int dpins, int apins)
 	}
 
 	// move down past the display area before returning to the prompt
-	snprintf(buf, 16, "\x1b[%d;1H", drow + 4);
+	
+	USB_print_ROM("\x1b["); //"\x1b[%d;1H", drow + 4
+	itoa(drow + 4, buf);
 	USB_print(buf);
-
+	USB_print_ROM(";1H");
 }
 
 
@@ -785,19 +828,21 @@ void read_all_pins(void)
 
 void show_digital_pin_status(int pin)
 {
-	char buf[32], *state;
-
+	char buf[4];
+	
+	USB_print_ROM("dpin "); //"dpin %d = %s", pin, state
+	itoa(pin, buf);
+	USB_print(buf);
+	USB_print_ROM(" = ");
+	
 	if(digitalRead(pin) == LOW) //TODO
-		state = "LOW";
+		USB_println_ROM("LOW");
 	else
-		state = "HIGH";
-	snprintf(buf, 32, "dpin %d = %s", pin, state);
-	USB_println(buf);
-
+		USB_println_ROM("HIGH");
 }
 
-
-void set_digital_pin(int pin)
+/*
+void set_digital_pin(int pin) //set ???, it's the same as show_digital_pin_status and not used
 {
 	char buf[32], *state;
 
@@ -809,17 +854,18 @@ void set_digital_pin(int pin)
 	USB_println(buf);
 
 }
-
+*/
 
 void show_analog_pin_status(int pin)
 {
-	char buf[32];
-	int val;
+	char buf[7]; //16bit
 
-	val = analogRead(pin); //TODO
-	snprintf(buf, 32, "apin %d = %d", pin, val);
+	USB_print_ROM("apin "); //"apin %d = %d", pin, analogRead(pin)
+	itoa(pin, buf);
+	USB_print(buf);
+	USB_print_ROM(" = ");
+	itoa(analogRead(pin), buf); //TODO
 	USB_println(buf);
-
 }
 
 
