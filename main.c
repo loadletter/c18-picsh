@@ -261,12 +261,22 @@
 #include "shell/arsh.h"
 
 /** V A R I A B L E S ********************************************************/
+	/* In the default linker files, each memory region is, at most,
+	 * 256 bytes (one bank) in size.
+	 *  Since a section must fit within a memory region,
+	 * any section which is larger than 256 bytes will trigger
+	 *  a "can not fit the section" error from the linker. 
+	 * http://www.xargs.com/pic/c18-sections.html */
+#if defined(__18CXX)
+    #pragma udata udata1
+#endif
+char USB_In_Buffer[256]; //placed in different udata section
+
 #if defined(__18CXX)
     #pragma udata
 #endif
-
-char USB_In_Buffer[255];
 char USB_Out_Buffer[64];
+
 
 BOOL stringPrinted;
 volatile BOOL buttonPressed;
