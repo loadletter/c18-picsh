@@ -414,12 +414,12 @@ void load_histentry(uint8_t pos)
  		{
  			// it's a number
  			snprintf(buf, 8, "%d ", histbuf[i] & 0x7f);
- 			strlcat(cmdbuf, buf, SERIAL_CMDBUF_LEN);
+ 			strlcat(cmdbuf, buf, SERIAL_CMDBUF_LEN); //TODO
  		}
  		else
  		{
- 			strlcat(cmdbuf, shelltokens[histbuf[i] - 1].keyword, SERIAL_CMDBUF_LEN);
- 			strlcat(cmdbuf, " ", SERIAL_CMDBUF_LEN);
+ 			strlcat(cmdbuf, shelltokens[histbuf[i] - 1].keyword, SERIAL_CMDBUF_LEN); //TODO
+ 			strlcat(cmdbuf, " ", SERIAL_CMDBUF_LEN); //TODO
  		}
 	}
 	USB_print_ROM("\r\x1b[0K");
@@ -776,8 +776,11 @@ void monitor(int dpins, int apins)
 			}
 		}
 
-		snprintf(buf, 16, "\x1b[%d;1H", drow + 3);
+		USB_print_ROM("\x1b["); //"\x1b[%d;1H", drow + 3
+		itoa(drow + 3, buf);
 		USB_print(buf);
+		USB_print_ROM(";1H");
+		
 		stamp = millis();
 		while(millis() < stamp + MONITOR_FREQUENCY) //TODO: this needs to be modiefied to not block (set a flag the first time and execute it until the char == 0x1b)
 		{
@@ -791,9 +794,11 @@ void monitor(int dpins, int apins)
 	}
 
 	// move down past the display area before returning to the prompt
-	snprintf(buf, 16, "\x1b[%d;1H", drow + 4);
+	
+	USB_print_ROM("\x1b["); //"\x1b[%d;1H", drow + 4
+	itoa(drow + 4, buf);
 	USB_print(buf);
-
+	USB_print_ROM(";1H");
 }
 
 
@@ -812,19 +817,21 @@ void read_all_pins(void)
 
 void show_digital_pin_status(int pin)
 {
-	char buf[32], *state;
-
+	char buf[4];
+	
+	USB_print_ROM("dpin "); //"dpin %d = %s", pin, state
+	itoa(pin, buf);
+	USB_print(buf);
+	USB_print_ROM(" = ");
+	
 	if(digitalRead(pin) == LOW) //TODO
-		state = "LOW";
+		USB_println_ROM("LOW");
 	else
-		state = "HIGH";
-	snprintf(buf, 32, "dpin %d = %s", pin, state);
-	USB_println(buf);
-
+		USB_println_ROM("HIGH");
 }
 
-
-void set_digital_pin(int pin)
+/*
+void set_digital_pin(int pin) //set ???, it's the same as show_digital_pin_status and not used
 {
 	char buf[32], *state;
 
@@ -836,17 +843,18 @@ void set_digital_pin(int pin)
 	USB_println(buf);
 
 }
-
+*/
 
 void show_analog_pin_status(int pin)
 {
-	char buf[32];
-	int val;
+	char buf[7]; //16bit
 
-	val = analogRead(pin); //TODO
-	snprintf(buf, 32, "apin %d = %d", pin, val);
+	USB_print_ROM("apin "); //"apin %d = %d", pin, analogRead(pin)
+	itoa(pin, buf);
+	USB_print(buf);
+	USB_print_ROM(" = ");
+	itoa(analogRead(pin), buf); //TODO
 	USB_println(buf);
-
 }
 
 
