@@ -102,6 +102,16 @@ void USB_putchar(char c)
 	usbbuf[buflen] = c;
 }
 
+int strncasecmp(char *s1, char *s2, int n)
+{
+    while (--n >= 0 && toupper(*s1) == toupper(*s2++))
+	if (toupper(*s1++) == '\0')
+	    return(0);
+    return(n < 0 ? 0 : toupper(*s1) - toupper(*--s2));
+}
+
+#define strcasecmp(A, B) strncasecmp((A), (B), strlen((A)))
+
 /* main */
 
 void init_arsh(char *buf)
