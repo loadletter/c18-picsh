@@ -413,13 +413,14 @@ void load_histentry(uint8_t pos)
  		if(histbuf[i] & 0x80)
  		{
  			// it's a number
- 			snprintf(buf, 8, "%d ", histbuf[i] & 0x7f);
- 			strlcat(cmdbuf, buf, SERIAL_CMDBUF_LEN); //TODO
+ 			btoa(histbuf[i] & 0x7f, buf);
+ 			strcatpgm2ram(cmdbuf, " ");
+ 			strncat(cmdbuf, buf, SERIAL_CMDBUF_LEN - strlen(cmdbuf) - 1);
  		}
  		else
  		{
- 			strlcat(cmdbuf, shelltokens[histbuf[i] - 1].keyword, SERIAL_CMDBUF_LEN); //TODO
- 			strlcat(cmdbuf, " ", SERIAL_CMDBUF_LEN); //TODO
+ 			strncat(cmdbuf, shelltokens[histbuf[i] - 1].keyword, SERIAL_CMDBUF_LEN - strlen(cmdbuf) - 1);
+ 			strncatpgm2ram(cmdbuf, " ", SERIAL_CMDBUF_LEN - strlen(cmdbuf) - 1);
  		}
 	}
 	USB_print_ROM("\r\x1b[0K");
