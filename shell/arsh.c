@@ -54,16 +54,6 @@ typedef struct tokenstruct {
 	const rom char *keyword;
 } tokenstruct;
 
-/* TODO: fix this text since it's bigger than 256 */
-const rom char HELP_TEXT[] = "Commands:\r\n\
-ping				return 'pong'\r\n\
-read dpin <pin>			return digital state of pin\r\n\
-read apin <pin>			return analog state of pin\r\n\
-set dpin <pin> <state>		set pin to state ('HIGH' or 'LOW')\r\n\
-set mode <pin> <mode>		set pin to mode ('IN' or 'OUT')\r\n\
-monitor [dpin|apin <pin> ...]	live pin monitor\r\n";
-//serial <rx> <tx>		establish serial connection on given pins\r\n";
-
 const rom char MONITOR_TEXT[] = "\x1b[2J\x1b[1;1H" "Arsh pin monitor (esc to quit)\r\n\r\n";
 
 // globals
@@ -257,6 +247,19 @@ void arsh(unsigned char c)
 	prev_char = c;
 }
 
+void print_help(void)
+{
+	USB_println_ROM(VERSION);
+	USB_endline();
+	USB_println_ROM("Commands:");
+	USB_println_ROM("ping				return 'pong'");
+	USB_println_ROM("read dpin <pin>			return digital state of pin");
+	USB_println_ROM("read apin <pin>			return analog state of pin");
+	USB_println_ROM("set dpin <pin> <state>		set pin to state ('HIGH' or 'LOW')");
+	USB_println_ROM("set mode <pin> <mode>		set pin to mode ('IN' or 'OUT')");
+	USB_println_ROM("monitor [dpin|apin <pin> ...]	live pin monitor");
+	//USB_println_ROM("serial <rx> <tx>		establish serial connection on given pins");
+}
 
 int try_completion(char *buf, int show_matches)
 {
@@ -515,7 +518,7 @@ void process_command(void)
 	parse_cmdline();
 	add_to_history();
 	if(tokens[0] == TOK_HELP)
-		USB_print_ROM(HELP_TEXT);
+		print_help();
 	else if(tokens[0] == TOK_PING)
 		USB_println_ROM("pong");
 	else if(tokens[0] == TOK_RESET)
@@ -527,7 +530,7 @@ void process_command(void)
 		if(num_tokens == 3)
 		{
 			if(tokens[2] < 0x80)
-				USB_print_ROM(HELP_TEXT);
+				print_help();
 			else
 			{
 				pin = tokens[2] & 0x7f;
@@ -538,7 +541,7 @@ void process_command(void)
 			}
 		}
 		else
-			USB_print_ROM(HELP_TEXT);
+			print_help();
 	}
 	else if(tokens[0] == TOK_SET)
 	{
@@ -547,7 +550,7 @@ void process_command(void)
 			if(tokens[1] == TOK_DPIN)
 			{
 				if(tokens[2] < 0x80)
-					USB_print_ROM(HELP_TEXT);
+					print_help();
 				else
 				{
 					pin = tokens[2] & 0x7f;
@@ -556,13 +559,13 @@ void process_command(void)
 					else if(tokens[3] == TOK_LOW)
 						digitalWrite(pin, LOW); //TODO
 					else
-						USB_print_ROM(HELP_TEXT);
+						print_help();
 				}
 			}
 			else if(tokens[1] == TOK_MODE)
 			{
 				if(tokens[2] < 0x80)
-					USB_print_ROM(HELP_TEXT);
+					print_help();
 				else
 				{
 					pin = tokens[2] & 0x7f;
@@ -571,14 +574,14 @@ void process_command(void)
 					else if(tokens[3] == TOK_OUT)
 						pinMode(pin, OUTPUT); //TODO
 					else
-						USB_print_ROM(HELP_TEXT);
+						print_help();
 				}
 			}
 			else
-				USB_print_ROM(HELP_TEXT);
+				print_help();
 		}
 		else
-			USB_print_ROM(HELP_TEXT);
+			print_help();
 	}
 	else if(tokens[0] == TOK_MONITOR)
 	{
@@ -594,7 +597,7 @@ void process_command(void)
 				else if(tokens[t] == TOK_APIN)
 					mode = 2;
 				else
-					USB_print_ROM(HELP_TEXT);
+					print_help();
 			}
 			else
 			{
