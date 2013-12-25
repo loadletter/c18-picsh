@@ -1,43 +1,56 @@
 #include <string.h>
+#include "./USB/usb_function_cdc.h"
+
 /* USB communication functions */
-
-char *usbbuf = NULL;
-
-void init_usbio(char *c)
-{
-	usbbuf = c;
-}
 
 void USB_endline(void)
 {
-	strcatpgm2ram(usbbuf, "\r\n");
+	if(mUSBUSARTIsTxTrfReady())
+		putrsUSBUSART("\r\n");
+	while(!USBUSARTIsTxTrfReady())
+		CDCTxService(); 
 }
 
 void USB_print(char *c)
 {
-	strcat(usbbuf, c);
+	if(mUSBUSARTIsTxTrfReady())
+		putsUSBUSART(c);
+	while(!USBUSARTIsTxTrfReady())
+		CDCTxService(); 
 }
 
 void USB_print_ROM(const char *c)
 {
-	strcatpgm2ram(usbbuf, c);
+	if(mUSBUSARTIsTxTrfReady())
+		putrsUSBUSART(c);
+	while(!USBUSARTIsTxTrfReady())
+		CDCTxService(); 
 }
 
 void USB_println(char *c)
 {
-	strcat(usbbuf, c);
+	if(mUSBUSARTIsTxTrfReady())
+		putsUSBUSART(c);
+	while(!USBUSARTIsTxTrfReady())
+		CDCTxService(); 
 	USB_endline();
 }
 
 void USB_println_ROM(const char *c)
 {
-	strcatpgm2ram(usbbuf, c);
+	if(mUSBUSARTIsTxTrfReady())
+		putrsUSBUSART(c);
+	while(!USBUSARTIsTxTrfReady())
+		CDCTxService(); 
 	USB_endline();
 }
 
 void USB_putchar(char c)
 {
-	unsigned char buflen = strlen(usbbuf);
-	usbbuf[buflen + 1] = 0;
-	usbbuf[buflen] = c;
+	char buf[] = "x\0";
+	buf[0] = c;
+	if(mUSBUSARTIsTxTrfReady())
+		putsUSBUSART(buf);
+	while(!USBUSARTIsTxTrfReady())
+		CDCTxService(); 
 }

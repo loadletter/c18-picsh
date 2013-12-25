@@ -23,8 +23,6 @@
 #include "arsh.h"
 #include "usbio.h"
 
-#include "./USB/usb_function_cdc.h"
-
 #define SERIAL_CMDBUF_LEN	64
 #define MAX_NUM_TOKENS		10
 #define MONITOR_FREQUENCY	200  // monitor refresh frequency in ms
@@ -220,7 +218,6 @@ void arsh(unsigned char c)
 void print_help(void)
 {
 	USB_println_ROM(VERSION);
-	USB_endline();
 	USB_println_ROM("Commands:");
 	USB_println_ROM("ping				return 'pong'");
 	USB_println_ROM("read dpin <pin>			return digital state of pin");

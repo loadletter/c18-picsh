@@ -715,9 +715,6 @@ void UserInit(void)
     //Initialize the shell
     init_arsh();
     
-    //Initialize usb buffer stuff
-    init_usbio(USB_In_Buffer);
-    
 }//end UserInit
 
 /********************************************************************
@@ -772,16 +769,11 @@ void ProcessIO(void)
 			for(i=0; i<numBytesRead; i++)
 			{
 				arsh(USB_Out_Buffer[i]);
-				
 			}
-
-			putsUSBUSART(USB_In_Buffer);
-			
 		}
 	}
-
-    CDCTxService();
-    USB_In_Buffer[0] = 0;
+	
+	CDCTxService();
 }		//end ProcessIO
 
 /********************************************************************
