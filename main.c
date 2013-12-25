@@ -51,7 +51,6 @@
 /** INCLUDES *******************************************************/
 #include "./USB/usb.h"
 #include "./USB/usb_function_cdc.h"
-#include "shell/arsh.h"
 
 #include "HardwareProfile.h"
 
@@ -258,7 +257,7 @@
 
 #include "HardwareProfile.h"
 
-#include "shell/arsh.h"
+#include "arsh.h"
 
 /** V A R I A B L E S ********************************************************/
 	/* In the default linker files, each memory region is, at most,
