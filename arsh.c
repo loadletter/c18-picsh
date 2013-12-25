@@ -218,6 +218,7 @@ void arsh(unsigned char c)
 void print_help(void)
 {
 	USB_println_ROM(VERSION);
+	USB_endline();
 	USB_println_ROM("Commands:");
 	USB_println_ROM("ping				return 'pong'");
 	USB_println_ROM("read dpin <pin>			return digital state of pin");

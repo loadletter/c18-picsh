@@ -23,23 +23,5 @@
 
 void init_arsh(void);
 void arsh(unsigned char c);
-/*
-int try_completion(char *buf, int show_matches);
-void tokenize(char *buf);
-void parse_cmdline(void);
-void add_to_history(void);
-uint8_t remove_oldest_history_entry(void);
-int8_t find_cur_histentry(void);
-void load_histentry(uint8_t pos);
-void history_up(void);
-void history_down(void);
-void process_command(void);
-void connect_serial(uint8_t rxpin, uint8_t txpin);
-uint8_t softserial_read(uint8_t rxpin);
-void monitor(int dpins, int apins);
-void read_all_pins(void);
-void show_digital_pin_status(int pin);
-void show_analog_pin_status(int pin);
-*/
 
 #endif /* ARSH_H_ */

@@ -266,12 +266,8 @@
 	 *  Since a section must fit within a memory region,
 	 * any section which is larger than 256 bytes will trigger
 	 *  a "can not fit the section" error from the linker. 
-	 * http://www.xargs.com/pic/c18-sections.html */
-#if defined(__18CXX)
-    #pragma udata udata1
-#endif
-char USB_In_Buffer[256]; //placed in different udata section
-
+	 * http://www.xargs.com/pic/c18-sections.html 
+	 * http://www.xargs.com/pic/c18large.html */
 #if defined(__18CXX)
     #pragma udata
 #endif
