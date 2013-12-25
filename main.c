@@ -772,11 +772,12 @@ void ProcessIO(void)
 			}
 
 			putsUSBUSART(USB_In_Buffer);
-			USB_In_Buffer[0] = 0;
+			
 		}
 	}
 
     CDCTxService();
+    USB_In_Buffer[0] = 0;
 }		//end ProcessIO
 
 /********************************************************************

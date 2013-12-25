@@ -54,7 +54,7 @@ typedef struct tokenstruct {
 	const rom char *keyword;
 } tokenstruct;
 
-
+/* TODO: fix this text since it's bigger than 256 */
 const rom char HELP_TEXT[] = "Commands:\r\n\
 ping				return 'pong'\r\n\
 read dpin <pin>			return digital state of pin\r\n\
@@ -115,16 +115,6 @@ void USB_putchar(char c)
 	usbbuf[buflen + 1] = 0;
 	usbbuf[buflen] = c;
 }
-
-int strncasecmp(char *s1, char *s2, int n)
-{
-    while (--n >= 0 && toupper(*s1) == toupper(*s2++))
-	if (toupper(*s1++) == '\0')
-	    return(0);
-    return(n < 0 ? 0 : toupper(*s1) - toupper(*--s2));
-}
-
-#define strcasecmp(A, B) strncasecmp((A), (B), strlen((A)))
 
 /* temporary defines */
 #define pinMode(a, b) ((a) + (b))
@@ -275,7 +265,7 @@ int try_completion(char *buf, int show_matches)
 	token = ret = 0;
 	len = strlen(buf);
 	for(i = 0; shelltokens[i].token; i++)
-		if(!strncasecmp(shelltokens[i].keyword, buf, len))
+		if(!strncmpram2pgm(shelltokens[i].keyword, buf, len))
 		{
 			if(show_matches)
 				USB_println(shelltokens[i].keyword);
@@ -312,7 +302,7 @@ void tokenize(char *buf)
 	done = 0;
 	for(i = 0; shelltokens[i].token; i++)
 	{
-		if(!strcasecmp(buf, shelltokens[i].keyword))
+		if(!strcmppgm2ram(buf, shelltokens[i].keyword))
 		{
 			tokens[num_tokens++] = shelltokens[i].token;
 			done = 1;
