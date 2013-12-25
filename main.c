@@ -258,6 +258,7 @@
 #include "HardwareProfile.h"
 
 #include "arsh.h"
+#include "usbio.h"
 
 /** V A R I A B L E S ********************************************************/
 	/* In the default linker files, each memory region is, at most,
@@ -711,8 +712,12 @@ void UserInit(void)
     //Initialize the pushbuttons
     mInitAllSwitches();
     
-    //Intialize the shell
-    init_arsh(USB_In_Buffer);
+    //Initialize the shell
+    init_arsh();
+    
+    //Initialize usb buffer stuff
+    init_usbio(USB_In_Buffer);
+    
 }//end UserInit
 
 /********************************************************************

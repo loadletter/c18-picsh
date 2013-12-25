@@ -21,6 +21,7 @@
 #include <ctype.h>
 #include <string.h>
 #include "arsh.h"
+#include "usbio.h"
 
 #include "./USB/usb_function_cdc.h"
 
@@ -80,32 +81,6 @@ tokenstruct shelltokens[] = {
 	{ 0, NULL }
 };
 
-/* USB communication functions */
-char *usbbuf = NULL;
-
-#define USB_endline() strcatpgm2ram(usbbuf, "\r\n")
-#define USB_print(x) strcat(usbbuf, (x))
-#define USB_print_ROM(x) strcatpgm2ram(usbbuf, (x))
-
-void USB_println(char *c)
-{
-	USB_print(c);
-	USB_endline();
-}
-
-void USB_println_ROM(const char *c)
-{
-	USB_print_ROM(c);
-	USB_endline();
-}
-
-void USB_putchar(char c)
-{
-	uint8_t buflen = strlen(usbbuf);
-	usbbuf[buflen + 1] = 0;
-	usbbuf[buflen] = c;
-}
-
 /* temporary defines */
 #define pinMode(a, b) ((a) + (b))
 #define digitalRead(x) 0
@@ -127,17 +102,12 @@ void show_analog_pin_status(int pin);
 
 /* main */
 
-void init_arsh(char *buf)
+void init_arsh(void)
 {
-	usbbuf = buf;
 	cmdbuf[0] = 0;
 	num_tokens = 0;
 	histbuf[0] = 0;
 	cur_histentry = -1;
-
-	USB_println_ROM(VERSION);
-	USB_print_ROM(PROMPT);
-
 }
 
 
