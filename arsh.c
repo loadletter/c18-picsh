@@ -112,7 +112,7 @@ void init_arsh(void)
 void arsh(unsigned char c)
 {
 	uint8_t complete, l, i;
-	char *word, *suffix;
+	rom char *word, *suffix;
 	static unsigned char prev_char = 0;
 	static uint8_t escmode = 0;
 
@@ -156,17 +156,21 @@ void arsh(unsigned char c)
 				{
 					if(l < SERIAL_CMDBUF_LEN)
 						cmdbuf[l++] = *suffix;
-					USB_putchar(*suffix);
 				}
 				if(l < SERIAL_CMDBUF_LEN-1)
 					cmdbuf[l++] = ' ';
 				cmdbuf[l] = 0;
-				USB_putchar(' ');
+				
+				USB_print_ROM("\x1b[1A"); //go to previous line
+				USB_print_ROM("\x1b[0K"); //erase the line (cursor to right)
+				USB_print_ROM(PROMPT);
+				USB_print(cmdbuf);
+				//USB_putchar(' ');
 			}
 			else if(complete & 0x80 && prev_char == 0x09)
 			{
 				// hit tab twice, show a list of completions
-				USB_println("");
+				USB_endline();
 				try_completion(word, 1);
 				USB_print_ROM(PROMPT);
 				USB_print(cmdbuf);
@@ -239,7 +243,7 @@ int try_completion(char *buf, int show_matches)
 		if(!strncmpram2pgm(shelltokens[i].keyword, buf, len))
 		{
 			if(show_matches)
-				USB_println(shelltokens[i].keyword);
+				USB_println_ROM(shelltokens[i].keyword);
 			token = shelltokens[i].token;
 			ret++;
 		}
