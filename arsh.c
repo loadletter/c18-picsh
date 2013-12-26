@@ -418,12 +418,11 @@ void load_histentry(uint8_t pos)
  		{
  			// it's a number
  			btoa(histbuf[i] & 0x7f, buf);
- 			strcatpgm2ram(cmdbuf, " ");
  			strncat(cmdbuf, buf, SERIAL_CMDBUF_LEN - strlen(cmdbuf) - 1);
  		}
  		else
  		{
- 			strncat(cmdbuf, shelltokens[histbuf[i] - 1].keyword, SERIAL_CMDBUF_LEN - strlen(cmdbuf) - 1);
+ 			strncatpgm2ram(cmdbuf, shelltokens[histbuf[i] - 1].keyword, SERIAL_CMDBUF_LEN - strlen(cmdbuf) - 1);
  			strncatpgm2ram(cmdbuf, " ", SERIAL_CMDBUF_LEN - strlen(cmdbuf) - 1);
  		}
 	}
